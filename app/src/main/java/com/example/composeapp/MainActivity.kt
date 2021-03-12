@@ -3,19 +3,23 @@ package com.example.composeapp
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.*
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -69,10 +73,16 @@ fun seperatePreview(){
 @ExperimentalAnimationApi
 @Composable
 fun JetPackCard(text: String , modifier: Modifier = Modifier){
-    Card(modifier){
+    Card(modifier, backgroundColor = Color.LightGray){
         var expanded by remember { mutableStateOf(false) }
-        Column(Modifier.clickable { expanded =!expanded }) {
-            Image(painterResource(R.drawable.jetpack_compose), contentDescription ="jetpack logo" )
+        Column(horizontalAlignment = Alignment.CenterHorizontally ,modifier = Modifier.clickable { expanded =!expanded }) {
+            Text(
+                text = "This is a Test",
+                style = MaterialTheme.typography.body1
+            )
+            Image(painterResource(R.drawable.jetpackcompose_logo3),
+                contentDescription ="jetpack logo",
+                modifier = Modifier.height(200.dp).width(200.dp) )
             AnimatedVisibility(expanded) {
                 Text(
                     text = text,
@@ -90,16 +100,22 @@ fun JetPackCard(text: String , modifier: Modifier = Modifier){
 @ExperimentalAnimationApi
 @Composable
 fun JetPackPreview() {
+    val scrollState = rememberLazyListState()
     Scaffold(
-        topBar = {TopAppBar(title = {Text("TopAppBar")},backgroundColor = MaterialTheme.colors.primary) },
+        topBar = {
+            AnimatedVisibility(visible = !scrollState.isScrollInProgress,
+                enter = slideInVertically(),
+                exit = slideOutVertically(),
+            ) {
+            TopAppBar(title = {Text("TopAppBar")},backgroundColor = MaterialTheme.colors.primary, elevation = 4.dp) }},
         content = {
             MaterialTheme {
                 Column(
                     Modifier
-                        .padding(20.dp)
+                        .padding(horizontal = 20.dp)
                         .fillMaxWidth()
                 ) {
-                    CardList()
+                    CardList(scrollState)
 
                 }
             }
@@ -115,12 +131,14 @@ fun JetPackPreview() {
 
 @ExperimentalAnimationApi
 @Composable
-fun CardList(){
+fun CardList(scrollState : LazyListState ){
     val list = List(50) { "Item number #$it" }
-    LazyColumn {
+    LazyColumn (state = scrollState){
         val cardModifier = Modifier
-            .clip(RoundedCornerShape(15))
+            .clip(RoundedCornerShape(8))
+            .fillMaxWidth()
             .padding(10.dp)
+
         items(list) { item ->
             JetPackCard(item, cardModifier)
 
